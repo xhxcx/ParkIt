@@ -30,17 +30,21 @@ public class FareCalculatorService {
         //Calculate the duration and convert it from millis to hours by dividing by 3600*1000
         double duration = (double)Duration.ofMillis(outHour - inHour).toMillis()/3600000;
 
-        //Apply fare regarding parking type
-        switch (ticket.getParkingSpot().getParkingType()){
-            case CAR: {
-                ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
-                break;
+        // Calculate fee only if the stay is more than 30 minutes
+        if(duration >= 0.5) {
+            //Apply fare regarding parking type
+            switch (ticket.getParkingSpot().getParkingType()) {
+                case CAR: {
+                    ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
+                    break;
+                }
+                case BIKE: {
+                    ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
+                    break;
+                }
+                default:
+                    throw new IllegalArgumentException("Unkown Parking Type");
             }
-            case BIKE: {
-                ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
-                break;
-            }
-            default: throw new IllegalArgumentException("Unkown Parking Type");
         }
     }
 }
