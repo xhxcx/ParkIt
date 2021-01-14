@@ -30,8 +30,8 @@ public class FareCalculatorService {
         //Calculate the duration and convert it from millis to hours by dividing by 3600*1000
         double duration = (double)Duration.ofMillis(outHour - inHour).toMillis()/3600000;
 
-        // Calculate fee only if the stay is more than 30 minutes
-        if(duration >= 0.5) {
+        // Calculate fee only if fare shouldn't be free
+        if(!isFreeFare(duration)) {
             //Apply fare regarding parking type
             switch (ticket.getParkingSpot().getParkingType()) {
                 case CAR: {
@@ -46,5 +46,15 @@ public class FareCalculatorService {
                     throw new IllegalArgumentException("Unkown Parking Type");
             }
         }
+    }
+
+    /**
+     * Evaluate if a fee should be free or not
+     *
+     * @param durationStay in hours
+     * @return True only if the stay is less than 30 minutes
+     */
+    public boolean isFreeFare(double durationStay){
+        return(durationStay<0.5);
     }
 }
