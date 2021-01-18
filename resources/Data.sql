@@ -18,6 +18,11 @@ create table ticket(
  FOREIGN KEY (PARKING_NUMBER)
  REFERENCES parking(PARKING_NUMBER));
 
+create table customer(
+ ID int PRIMARY KEY AUTO_INCREMENT,
+ VEHICLE_REG_NUMBER varchar(10) NOT NULL,
+ DISCOUNT_AVAILABLE double);
+
 insert into parking(PARKING_NUMBER,AVAILABLE,TYPE) values(1,true,'CAR');
 insert into parking(PARKING_NUMBER,AVAILABLE,TYPE) values(2,true,'CAR');
 insert into parking(PARKING_NUMBER,AVAILABLE,TYPE) values(3,true,'CAR');
@@ -44,6 +49,11 @@ create table ticket(
  OUT_TIME DATETIME,
  FOREIGN KEY (PARKING_NUMBER)
  REFERENCES parking(PARKING_NUMBER));
+
+create table customer(
+ ID int PRIMARY KEY AUTO_INCREMENT,
+ VEHICLE_REG_NUMBER varchar(10) NOT NULL,
+ DISCOUNT_AVAILABLE double);
 
 insert into parking(PARKING_NUMBER,AVAILABLE,TYPE) values(1,true,'CAR');
 insert into parking(PARKING_NUMBER,AVAILABLE,TYPE) values(2,true,'CAR');

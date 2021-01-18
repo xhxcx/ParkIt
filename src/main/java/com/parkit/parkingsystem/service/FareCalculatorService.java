@@ -30,22 +30,28 @@ public class FareCalculatorService {
         //Calculate the duration and convert it from millis to hours by dividing by 3600*1000
         double duration = (double)Duration.ofMillis(outHour - inHour).toMillis()/3600000;
 
+        double fare = 0;
+
         // Calculate fee only if fare shouldn't be free
         if(!isFreeFare(duration)) {
             //Apply fare regarding parking type
             switch (ticket.getParkingSpot().getParkingType()) {
                 case CAR: {
-                    ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
+                    fare = (duration * Fare.CAR_RATE_PER_HOUR);
                     break;
                 }
                 case BIKE: {
-                    ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
+                    fare = (duration * Fare.BIKE_RATE_PER_HOUR);
                     break;
                 }
                 default:
                     throw new IllegalArgumentException("Unkown Parking Type");
             }
+            //Apply recurring discount if ticket is eligible
+            fare -= ticket.isEligibleForRecurringUser()?(fare*Fare.RECURRING_USER_DISCOUNT):0;
         }
+
+        ticket.setPrice(fare);
     }
 
     /**
