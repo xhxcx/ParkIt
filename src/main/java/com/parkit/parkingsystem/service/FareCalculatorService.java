@@ -3,7 +3,10 @@ package com.parkit.parkingsystem.service;
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Fare calculator to set price for a given Ticket
@@ -23,12 +26,12 @@ public class FareCalculatorService {
             throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
         }
 
-        //Get entry and exit hours in millis
-        long inHour = ticket.getInTime().getTime();
-        long outHour = ticket.getOutTime().getTime();
+        //Get entry and exit hours
+        Instant inHour = ticket.getInTime().toInstant();
+        Instant outHour = ticket.getOutTime().toInstant();
 
-        //Calculate the duration and convert it from millis to hours by dividing by 3600*1000
-        double duration = (double)Duration.ofMillis(outHour - inHour).toMillis()/3600000;
+        //Calculate the duration and convert it from millis to hours by dividing by 1000*3600 (to seconds*to hours)
+        double duration = Duration.between(inHour, outHour).toMillis()/3600000.0;
 
         double fare = 0;
 
@@ -51,7 +54,7 @@ public class FareCalculatorService {
             fare -= ticket.isEligibleForRecurringUser()?(fare*Fare.RECURRING_USER_DISCOUNT):0;
         }
 
-        ticket.setPrice(fare);
+        ticket.setPrice(formatFareToPrice(fare));
     }
 
     /**
@@ -62,5 +65,16 @@ public class FareCalculatorService {
      */
     public boolean isFreeFare(double durationStay){
         return(durationStay<0.5);
+    }
+
+    /**
+     * Format a double to match a price display
+     * Truncate the entry double to only keep 2 decimals rounding up
+     *
+     * @param exactFare double
+     * @return double with 2 decimal
+     */
+    public double formatFareToPrice(double exactFare){
+        return new BigDecimal(exactFare).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 }
