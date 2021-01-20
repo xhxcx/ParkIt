@@ -26,6 +26,7 @@ public class ParkingService {
     private InputReaderUtil inputReaderUtil;
     private ParkingSpotDAO parkingSpotDAO;
     private  TicketDAO ticketDAO;
+    private ParkingCustomerDAO customerDAO = new ParkingCustomerDAO();
 
     public ParkingService(InputReaderUtil inputReaderUtil, ParkingSpotDAO parkingSpotDAO, TicketDAO ticketDAO){
         this.inputReaderUtil = inputReaderUtil;
@@ -52,13 +53,26 @@ public class ParkingService {
 
                 Date inTime = new Date();
                 Ticket ticket = new Ticket();
-                //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
+                //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME, ELIGIBLE_TO_DISCOUNT)
                 //ticket.setId(ticketID);
                 ticket.setParkingSpot(parkingSpot);
                 ticket.setVehicleRegNumber(vehicleRegNumber);
                 ticket.setPrice(0);
                 ticket.setInTime(inTime);
                 ticket.setOutTime(null);
+
+                //Verify if the vehicle is already registered as customer
+                if(null == customerDAO.getParkingCustomer(vehicleRegNumber)) {
+                    //If not : create new customer and set the ticket not eligible for discount
+                    addNewParkingCustomer(vehicleRegNumber, customerDAO);
+                    ticket.setIsEligibleForRecurringUser(false);
+                }
+
+                else {
+                    ticket.setIsEligibleForRecurringUser(true);
+                    System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a " + Fare.RECURRING_USER_DISCOUNT*100 + "% discount.");
+                }
+
                 ticketDAO.saveTicket(ticket);
                 System.out.println("Generated Ticket and saved in DB");
                 System.out.println("Please park your vehicle in spot number:"+parkingSpot.getId());
@@ -147,18 +161,6 @@ public class ParkingService {
             String vehicleRegNumber = getVehichleRegNumber();
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
-            ParkingCustomerDAO customerDAO = new ParkingCustomerDAO();
-
-            //Verify if the vehicle is already registered as customer
-            if(customerDAO.getParkingCustomer(vehicleRegNumber) == null){
-                //If not : create new customer and set the ticket not eligible for discount
-                addNewParkingCustomer(vehicleRegNumber,customerDAO);
-                ticket.setIsEligibleForRecurringUser(false);
-            }
-            else {
-                ticket.setIsEligibleForRecurringUser(true);
-                System.out.println("As a recurring user, you get a " + Fare.RECURRING_USER_DISCOUNT*100 + "% discount on your ticket.");
-            }
 
             ticket.setOutTime(outTime);
 
