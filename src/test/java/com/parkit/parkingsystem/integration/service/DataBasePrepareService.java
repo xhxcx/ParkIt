@@ -19,6 +19,9 @@ public class DataBasePrepareService {
             //clear ticket entries;
             connection.prepareStatement("truncate table ticket").execute();
 
+            //clear customer entries
+            connection.prepareStatement("truncate table customer").execute();
+
         }catch(Exception e){
             e.printStackTrace();
         }finally {
