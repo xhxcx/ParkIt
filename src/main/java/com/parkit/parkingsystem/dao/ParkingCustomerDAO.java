@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Manage interaction with parking DB table customer
@@ -27,17 +28,12 @@ public class ParkingCustomerDAO {
      * @throws Exception ex if DB connection failed
      */
     public boolean saveParkingCustomer(ParkingCustomer customer){
-        Connection con = null;
-        try {
-            con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.SAVE_CUSTOMER);
+        try (Connection con = dataBaseConfig.getConnection(); PreparedStatement ps =con.prepareStatement(DBConstants.SAVE_CUSTOMER)){
             ps.setString(1, customer.getPlateNumber());
             ps.setDouble(2, customer.getDiscountBonus());
             return ps.execute();
-        }catch (Exception ex){
+        }catch (SQLException | ClassNotFoundException ex){
             logger.error("Error fetching parking customer",ex);
-        }finally {
-            dataBaseConfig.closeConnection(con);
             return false;
         }
     }
@@ -49,16 +45,13 @@ public class ParkingCustomerDAO {
      * @return ParkingCustomer with attributes set
      * @throws Exception ex if DB connection failed
      */
-    public ParkingCustomer getParkingCustomer(String plateNumber){
-        Connection con = null;
+    public ParkingCustomer getParkingCustomer(String plateNumber) {
         ParkingCustomer parkingCustomer = null;
-        try {
-            con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement(DBConstants.GET_CUSTOMER);
+        try (Connection con = dataBaseConfig.getConnection() ; PreparedStatement ps = con.prepareStatement(DBConstants.GET_CUSTOMER)) {
             // ID,VEHICLE_REG_NUMBER, DISCOUNT_AVAILABLE
-            ps.setString(1,plateNumber);
+            ps.setString(1, plateNumber);
             ResultSet rs = ps.executeQuery();
-            if(rs.next()){
+            if (rs.next()) {
                 parkingCustomer = new ParkingCustomer();
                 parkingCustomer.setPlateNumber(plateNumber);
                 parkingCustomer.setId(rs.getInt(2));
@@ -66,12 +59,11 @@ public class ParkingCustomerDAO {
             }
 
             dataBaseConfig.closeResultSet(rs);
-            dataBaseConfig.closePreparedStatement(ps);
-        }catch (Exception ex){
-            logger.error("Error fetching parking customer",ex);
-        }finally {
-            dataBaseConfig.closeConnection(con);
-            return parkingCustomer;
+            //dataBaseConfig.closePreparedStatement(ps);
+        } catch (SQLException | ClassNotFoundException ex) {
+            logger.error("Error fetching parking customer", ex);
         }
+
+        return parkingCustomer;
     }
 }

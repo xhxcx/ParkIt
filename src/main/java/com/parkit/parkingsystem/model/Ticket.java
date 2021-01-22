@@ -43,21 +43,17 @@ public class Ticket {
         this.price = price;
     }
 
-    public Date getInTime() {
-        return inTime;
-    }
+    public Date getInTime() { return null!=inTime ? (Date) inTime.clone() : null; }
 
     public void setInTime(Date inTime) {
-        this.inTime = inTime;
+        this.inTime = null != inTime ? (Date) inTime.clone() : null;
     }
 
     public Date getOutTime() {
-        return outTime;
+        return null != outTime ? (Date) outTime.clone() : null;
     }
 
-    public void setOutTime(Date outTime) {
-        this.outTime = outTime;
-    }
+    public void setOutTime(Date outTime) { this.outTime = null != outTime ? (Date) outTime.clone() : null; }
 
     public void setIsEligibleForRecurringUser(boolean b) { this.isEligibleForRecurringUser = b; }
 

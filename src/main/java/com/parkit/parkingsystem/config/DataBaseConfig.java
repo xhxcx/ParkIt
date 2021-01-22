@@ -3,7 +3,10 @@ package com.parkit.parkingsystem.config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Properties;
 
 public class DataBaseConfig {
 
@@ -11,9 +14,15 @@ public class DataBaseConfig {
 
     public Connection getConnection() throws ClassNotFoundException, SQLException {
         logger.info("Create DB connection");
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        return DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/prod?serverTimezone=UTC","root","rootroot");
+        Properties dbProperties = new Properties();
+        try (FileInputStream dbConfigFile = new FileInputStream("src/main/resources/db_config.properties")){
+            dbProperties.load(dbConfigFile);
+
+        } catch (IOException e) {
+            logger.error("Fail to load database config",e);
+        }
+        Class.forName(dbProperties.getProperty("jdbc.driver.class"));
+        return DriverManager.getConnection(dbProperties.getProperty("jdbc.host.prod"),dbProperties.getProperty("jdbc.username"),dbProperties.getProperty("jdbc.password"));
     }
 
     public void closeConnection(Connection con){
