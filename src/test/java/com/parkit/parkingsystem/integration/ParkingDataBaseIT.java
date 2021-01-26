@@ -19,8 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Date;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.when;
@@ -29,28 +27,22 @@ import static org.mockito.Mockito.when;
 public class ParkingDataBaseIT {
 
     private static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
-    private static ParkingSpotDAO parkingSpotDAO;
-    private static TicketDAO ticketDAO;
-    private static ParkingCustomerDAO customerDAO;
-    private static DataBasePrepareService dataBasePrepareService;
+    private static ParkingSpotDAO parkingSpotDAO = new ParkingSpotDAO();
+    private static TicketDAO ticketDAO = new TicketDAO();
+    private static ParkingCustomerDAO customerDAO = new ParkingCustomerDAO();
+    private static DataBasePrepareService dataBasePrepareService = new DataBasePrepareService();
     private static Ticket myTicket;
-    private final static Date fakeInTime = new Date();
 
     @Mock
     private static InputReaderUtil inputReaderUtil;
 
     @BeforeAll
     private static void setUp() throws Exception{
-        parkingSpotDAO = new ParkingSpotDAO();
         parkingSpotDAO.dataBaseConfig = dataBaseTestConfig;
-        ticketDAO = new TicketDAO();
         ticketDAO.dataBaseConfig = dataBaseTestConfig;
-        customerDAO = new ParkingCustomerDAO();
         customerDAO.dataBaseConfig = dataBaseTestConfig;
-        dataBasePrepareService = new DataBasePrepareService();
 
         myTicket = null;
-        fakeInTime.setTime( System.currentTimeMillis() - (  24 * 60 * 60 * 1000) );
 
     }
 
@@ -97,11 +89,8 @@ public class ParkingDataBaseIT {
         // WHEN
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO, customerDAO);
         parkingService.processIncomingVehicle();
-        try {
-            myTicket = ticketDAO.getTicket(inputReaderUtil.readVehicleRegistrationNumber());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        myTicket = ticketDAO.getTicket(inputReaderUtil.readVehicleRegistrationNumber());
+
 
         // THEN : check ticket in DB is eligible to the discount and check if the customer is correctly get
         assertThat(myTicket.isEligibleForRecurringUser()).isTrue();
@@ -127,21 +116,23 @@ public class ParkingDataBaseIT {
     public void testParkingLotExit(){
 
         // GIVEN
-        testParkingACar();
-        //Modify entry time to set it 24 hours ago and save the ticket
-        myTicket.setInTime(fakeInTime);
-        System.out.println("Override in time to : " + myTicket.getInTime());
-        ticketDAO.saveTicket(myTicket);
-
-        // WHEN : process exiting
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO, customerDAO);
+        parkingService.processIncomingVehicle();
+        myTicket = ticketDAO.getTicket(inputReaderUtil.readVehicleRegistrationNumber());
+
+        //Wait 2sec to have an exit timestamp after the entry
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // WHEN : process exiting
         parkingService.processExitingVehicle();
         // get ticket from DB
-        myTicket = ticketDAO.getTicket("ABCDEF");
+        Ticket outTicket = ticketDAO.getTicket(inputReaderUtil.readVehicleRegistrationNumber());
 
-        // THEN : check exit time, price and if parking spot has been freed
-        assertThat(myTicket.getOutTime()).isAfter(myTicket.getInTime());
-        assertThat(myTicket.getPrice()).isGreaterThan(0);
+        // THEN : check exit time and if parking spot has been freed
+        assertThat(outTicket.getOutTime()).isAfter(outTicket.getInTime());
         assertThat(parkingService.getNextParkingNumberIfAvailable().hashCode()).isEqualTo(1);
 
     }

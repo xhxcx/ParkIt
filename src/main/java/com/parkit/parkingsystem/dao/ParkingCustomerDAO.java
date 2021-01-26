@@ -59,7 +59,6 @@ public class ParkingCustomerDAO {
             }
 
             dataBaseConfig.closeResultSet(rs);
-            //dataBaseConfig.closePreparedStatement(ps);
         } catch (SQLException | ClassNotFoundException ex) {
             logger.error("Error fetching parking customer", ex);
         }

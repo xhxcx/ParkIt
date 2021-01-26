@@ -26,9 +26,6 @@ public class DataBaseTestConfig extends DataBaseConfig {
         Class.forName(dbProperties.getProperty("jdbc.driver.class"));
         return DriverManager.getConnection(dbProperties.getProperty("jdbc.host.test"),dbProperties.getProperty("jdbc.username"),dbProperties.getProperty("jdbc.password"));
 
-        /*Class.forName("com.mysql.cj.jdbc.Driver");
-        return DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/test?serverTimezone=UTC","root","rootroot");*/
     }
 
     public void closeConnection(Connection con){

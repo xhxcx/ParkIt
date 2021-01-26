@@ -89,7 +89,7 @@ public class ParkingService {
      * Ask user to enter his plate number then get it with InputReader
      *
      * @return Plate number of the entering vehicle
-     * @throws Exception
+     * @throws Exception if the scan of the input reader fails
      */
     private String getVehichleRegNumber() throws Exception {
         System.out.println("Please type the vehicle registration number and press enter key");
