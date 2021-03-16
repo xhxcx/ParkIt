@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ParkingCustomerDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">parking-system</a> &gt; <a href="index.source.html" class="el_package">com.parkit.parkingsystem.dao</a> &gt; <span class="el_source">ParkingCustomerDAO.java</span></div><h1>ParkingCustomerDAO.java</h1><pre class="source lang-java linenums">package com.parkit.parkingsystem.dao;
+
+import com.parkit.parkingsystem.config.DataBaseConfig;
+import com.parkit.parkingsystem.constants.DBConstants;
+import com.parkit.parkingsystem.model.ParkingCustomer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Manage interaction with parking DB table customer
+ */
+<span class="fc" id="L17">public class ParkingCustomerDAO {</span>
+
+<span class="fc" id="L19">    private static final Logger logger = LogManager.getLogger(&quot;CustomerDAO&quot;);</span>
+
+<span class="fc" id="L21">    public DataBaseConfig dataBaseConfig = new DataBaseConfig();</span>
+
+    /**
+     * Save a ParkingCustomer object in the DB
+     *
+     * @param customer ParkingCustomer object
+     * @return boolean true if connection and insert are ok
+     * @throws Exception ex if DB connection failed
+     */
+    public boolean saveParkingCustomer(ParkingCustomer customer){
+<span class="fc" id="L31">        try (Connection con = dataBaseConfig.getConnection(); PreparedStatement ps =con.prepareStatement(DBConstants.SAVE_CUSTOMER)){</span>
+<span class="fc" id="L32">            ps.setString(1, customer.getPlateNumber());</span>
+<span class="fc" id="L33">            ps.setDouble(2, customer.getDiscountBonus());</span>
+<span class="fc" id="L34">            return ps.execute();</span>
+<span class="nc" id="L35">        }catch (SQLException | ClassNotFoundException ex){</span>
+<span class="nc" id="L36">            logger.error(&quot;Error fetching parking customer&quot;,ex);</span>
+<span class="nc" id="L37">            return false;</span>
+        }
+    }
+
+    /**
+     * Search in DB if there is an existing customer with the given plate number
+     *
+     * @param plateNumber vehicle reg number
+     * @return ParkingCustomer with attributes set
+     * @throws Exception ex if DB connection failed
+     */
+    public ParkingCustomer getParkingCustomer(String plateNumber) {
+<span class="fc" id="L49">        ParkingCustomer parkingCustomer = null;</span>
+<span class="fc" id="L50">        try (Connection con = dataBaseConfig.getConnection() ; PreparedStatement ps = con.prepareStatement(DBConstants.GET_CUSTOMER)) {</span>
+            // ID,VEHICLE_REG_NUMBER, DISCOUNT_AVAILABLE
+<span class="fc" id="L52">            ps.setString(1, plateNumber);</span>
+<span class="fc" id="L53">            ResultSet rs = ps.executeQuery();</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            if (rs.next()) {</span>
+<span class="fc" id="L55">                parkingCustomer = new ParkingCustomer();</span>
+<span class="fc" id="L56">                parkingCustomer.setPlateNumber(plateNumber);</span>
+<span class="fc" id="L57">                parkingCustomer.setId(rs.getInt(2));</span>
+<span class="fc" id="L58">                parkingCustomer.setDiscountBonus(rs.getDouble(3));</span>
+            }
+
+<span class="fc" id="L61">            dataBaseConfig.closeResultSet(rs);</span>
+<span class="nc" id="L62">        } catch (SQLException | ClassNotFoundException ex) {</span>
+<span class="nc" id="L63">            logger.error(&quot;Error fetching parking customer&quot;, ex);</span>
+<span class="fc" id="L64">        }</span>
+
+<span class="fc" id="L66">        return parkingCustomer;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

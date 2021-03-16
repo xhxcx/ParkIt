@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FareCalculatorService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">parking-system</a> &gt; <a href="index.source.html" class="el_package">com.parkit.parkingsystem.service</a> &gt; <span class="el_source">FareCalculatorService.java</span></div><h1>FareCalculatorService.java</h1><pre class="source lang-java linenums">package com.parkit.parkingsystem.service;
+
+import com.parkit.parkingsystem.constants.Fare;
+import com.parkit.parkingsystem.model.Ticket;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
+
+/**
+ * Fare calculator to set price for a given Ticket
+ *
+ */
+<span class="fc" id="L15">public class FareCalculatorService {</span>
+
+    /**
+     * Calculate a fee based on a Ticket
+     * get entry and exit hours
+     * then multiply the duration of stay by the rate regarding the parking type
+     *
+     * @param ticket
+     */
+    public void calculateFare(Ticket ticket){
+<span class="pc bpc" id="L25" title="1 of 4 branches missed.">        if( (ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime())) ){</span>
+<span class="fc" id="L26">            throw new IllegalArgumentException(&quot;Out time provided is incorrect:&quot;+ticket.getOutTime().toString());</span>
+        }
+
+        //Get entry and exit hours
+<span class="fc" id="L30">        Instant inHour = ticket.getInTime().toInstant();</span>
+<span class="fc" id="L31">        Instant outHour = ticket.getOutTime().toInstant();</span>
+
+        //Calculate the duration and convert it from millis to hours by dividing by 1000*3600 (to seconds*to hours)
+<span class="fc" id="L34">        double duration = Duration.between(inHour, outHour).toMillis()/3600000.0;</span>
+
+<span class="fc" id="L36">        double fare = 0;</span>
+
+        // Calculate fee only if fare shouldn't be free
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if(!isFreeFare(duration)) {</span>
+            //Apply fare regarding parking type
+<span class="pc bpc" id="L41" title="1 of 3 branches missed.">            switch (ticket.getParkingSpot().getParkingType()) {</span>
+                case CAR: {
+<span class="fc" id="L43">                    fare = (duration * Fare.CAR_RATE_PER_HOUR);</span>
+<span class="fc" id="L44">                    break;</span>
+                }
+                case BIKE: {
+<span class="fc" id="L47">                    fare = (duration * Fare.BIKE_RATE_PER_HOUR);</span>
+<span class="fc" id="L48">                    break;</span>
+                }
+                default:
+<span class="nc" id="L51">                    throw new IllegalArgumentException(&quot;Unkown Parking Type&quot;);</span>
+            }
+            //Apply recurring discount if ticket is eligible
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            fare -= ticket.isEligibleForRecurringUser()?(fare*Fare.RECURRING_USER_DISCOUNT):0;</span>
+        }
+
+<span class="fc" id="L57">        ticket.setPrice(formatFareToPrice(fare));</span>
+<span class="fc" id="L58">    }</span>
+
+    /**
+     * Evaluate if a fee should be free or not
+     *
+     * @param durationStay in hours
+     * @return True only if the stay is less than 30 minutes
+     */
+    public boolean isFreeFare(double durationStay){
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        return(durationStay&lt;0.5);</span>
+    }
+
+    /**
+     * Format a double to match a price display
+     * Truncate the entry double to only keep 2 decimals rounding up
+     *
+     * @param exactFare double
+     * @return double with 2 decimal
+     */
+    public double formatFareToPrice(double exactFare){
+<span class="fc" id="L78">        return new BigDecimal(exactFare).setScale(2, RoundingMode.HALF_UP).doubleValue();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
